@@ -6,6 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.routes import auth, monitors, checks, ai
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 load_dotenv()
 
@@ -27,6 +30,12 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan
 )
+
+# Set up slowapi rate limiting: attach limiter to app state and handle 429 errors
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 # CORS configuration

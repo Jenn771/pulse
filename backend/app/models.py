@@ -29,6 +29,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     monitors = relationship("Monitor", back_populates="owner", cascade="all, delete")
+    refresh_tokens = relationship("RefreshToken", back_populates="owner", cascade="all, delete")
 
 
 class Monitor(Base):
@@ -82,3 +83,15 @@ class Analysis(Base):
     summary_text = Column(String, nullable=False)
 
     monitor = relationship("Monitor", back_populates="analyses")
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    token = Column(String, unique=True, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    revoked = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    owner = relationship("User", back_populates="refresh_tokens")
