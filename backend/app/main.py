@@ -8,9 +8,10 @@ from app.scheduler import scheduler
 from app.routes import auth, monitors, checks, ai
 from app.worker import register_monitor_job
 from app.database import SessionLocal
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+
+from app.limiter import limiter
 
 load_dotenv()
 
@@ -44,7 +45,6 @@ app = FastAPI(
 )
 
 # Set up slowapi rate limiting: attach limiter to app state and handle 429 errors
-limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)

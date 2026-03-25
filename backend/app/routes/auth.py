@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
+from app.limiter import limiter
 from app.database import get_db
 from app.models import User
 from app.auth import (
@@ -14,9 +13,6 @@ from app.auth import (
     get_current_user
 )
 from app.schemas import UserCreate, UserResponse, LoginRequest, TokenResponse, RefreshRequest
-
-# Limiter uses the client's IP address as the key for rate limiting
-limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter()
 

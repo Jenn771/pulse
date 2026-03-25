@@ -11,3 +11,7 @@ node_modules/
 
 # OS
 .DS_Store
+
+# Test artifacts
+backend/test.db
+backend/.pytest_cache/
