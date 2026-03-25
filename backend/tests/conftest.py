@@ -49,8 +49,11 @@ def client():
 
     import app.database as db_module
     import app.routes.monitors as monitors_module
+    import app.worker as worker_module
     db_module.redis_client = mock_redis
     monitors_module.redis_client = mock_redis
+
+    worker_module.redis_client = mock_redis
 
     if not scheduler.running:
         pass

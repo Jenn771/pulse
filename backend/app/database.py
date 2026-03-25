@@ -30,8 +30,4 @@ def get_db():
 # Redis Setup
 REDIS_URL = os.getenv("REDIS_URL")
 
-redis_client = redis_lib.from_url(
-    REDIS_URL, 
-    ssl_cert_reqs=None, 
-    decode_responses=True
-)
+redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
