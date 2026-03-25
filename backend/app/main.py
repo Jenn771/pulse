@@ -3,23 +3,35 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from apscheduler.schedulers.background import BackgroundScheduler
+from app.scheduler import scheduler
 
 from app.routes import auth, monitors, checks, ai
+from app.worker import register_monitor_job
+from app.database import SessionLocal
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 load_dotenv()
 
-scheduler = BackgroundScheduler()
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     scheduler.start()
 
-    yield  # Server is running, handling requests
+    db = SessionLocal()
+    try:
+        from app.models import Monitor
+        monitors_list = db.query(Monitor).filter(
+            Monitor.is_active == True
+        ).all()
+        for monitor in monitors_list:
+            register_monitor_job(scheduler, monitor.id, monitor.interval_minutes)
+        print(f"[INFO] Re-registered {len(monitors_list)} monitor jobs on startup")
+    finally:
+        db.close()
+
+    yield
 
     scheduler.shutdown(wait=False)
 
@@ -58,7 +70,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(monitors.router, prefix="/monitors", tags=["monitors"])
-app.include_router(checks.router, prefix="/checks", tags=["checks"])
+app.include_router(checks.router, prefix="/monitors", tags=["monitors"])
 app.include_router(ai.router, prefix="/ai", tags=["ai"])
 
 
