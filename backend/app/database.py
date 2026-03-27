@@ -1,4 +1,5 @@
 import os
+import certifi
 import redis as redis_lib
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
@@ -29,5 +30,9 @@ def get_db():
 
 # Redis Setup
 REDIS_URL = os.getenv("REDIS_URL")
+redis_kwargs = {"decode_responses": True}
+if REDIS_URL and REDIS_URL.startswith("rediss://"):
+    redis_kwargs["ssl_cert_reqs"] = "required"
+    redis_kwargs["ssl_ca_certs"] = certifi.where()
 
-redis_client = redis_lib.from_url(REDIS_URL, decode_responses=True)
+redis_client = redis_lib.from_url(REDIS_URL, **redis_kwargs)
