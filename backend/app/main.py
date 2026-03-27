@@ -17,7 +17,7 @@ load_dotenv()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     scheduler.start()
 
     db = SessionLocal()

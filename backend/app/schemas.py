@@ -102,6 +102,3 @@ class AnalysisResponse(BaseModel):
     summary_text: str
 
     model_config = {"from_attributes": True}
-
-class AnalysisRequest(BaseModel):
-    pass

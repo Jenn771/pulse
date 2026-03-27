@@ -82,8 +82,7 @@ def refresh(refresh_data: RefreshRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/me", response_model=UserResponse)
-def get_me(db: Session = Depends(get_db),
-           current_user: User = Depends(get_current_user)):
+def get_me(current_user: User = Depends(get_current_user)):
     # Returns the currently logged in user's profile
     # get_current_user dependency handles token verification
     return current_user
