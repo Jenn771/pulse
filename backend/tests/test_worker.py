@@ -24,18 +24,15 @@ def test_monitor_check_records_status(authenticated_client):
 
 
 def test_anomaly_detection_flags_slow():
-    # Normal response times around 200ms
     recent = [200.0, 195.0, 205.0, 198.0, 202.0,
               199.0, 201.0, 197.0, 203.0, 200.0]
-    # Spike to 900ms — well over 3 standard deviations
-    assert detect_anomaly(recent, 900.0) == True
+
+    assert detect_anomaly(recent, 900.0) == True # Large spike should trigger anomaly
 
 
 def test_anomaly_detection_needs_minimum_samples():
-    # Fewer than 5 samples — should never flag as anomaly
-    # because stdev is unreliable with small samples
     recent = [200.0, 195.0, 205.0]
-    assert detect_anomaly(recent, 900.0) == False
+    assert detect_anomaly(recent, 900.0) == False # Needs at least 5 samples
 
 
 def test_analyze_endpoint_returns_text(authenticated_client):
@@ -46,12 +43,13 @@ def test_analyze_endpoint_returns_text(authenticated_client):
     })
     monitor_id = create.json()["id"]
 
-    # Mock the Claude API call so tests don't hit the real API
     mock_message = MagicMock()
     mock_message.content = [MagicMock(text="This monitor has been reliable.")]
 
-    with patch("app.routes.ai.anthropic") as mock_anthropic:
-        mock_anthropic.messages.create.return_value = mock_message
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_message
+
+    with patch("app.routes.ai.client", mock_client): # Prevent real Claude API calls
         response = authenticated_client.get(f"/ai/{monitor_id}/analyze")
 
     assert response.status_code == 200
@@ -69,10 +67,10 @@ def test_analyze_saves_to_analyses_table(authenticated_client):
     mock_message = MagicMock()
     mock_message.content = [MagicMock(text="Stable performance observed.")]
 
-    with patch("app.routes.ai.anthropic") as mock_anthropic:
-        mock_anthropic.messages.create.return_value = mock_message
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_message
+    with patch("app.routes.ai.client", mock_client):
         authenticated_client.get(f"/ai/{monitor_id}/analyze")
-        # Call again — should be rate limited
         response = authenticated_client.get(f"/ai/{monitor_id}/analyze")
 
     # Second call within an hour should be rate limited
@@ -88,8 +86,6 @@ def test_redis_caches_latest_status(authenticated_client):
     })
     monitor_id = create.json()["id"]
 
-    # Redis should have been set to UNKNOWN on monitor creation
-    # Our mock captures the call — verify set was called with the right key
     redis_client.set.assert_called_with(
         f"status:{monitor_id}", "UNKNOWN"
     )
