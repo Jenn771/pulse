@@ -87,7 +87,8 @@ def analyze_monitor(
     # Build context strings for Claude
     summary = build_summary(checks)
     all_monitors = db.query(Monitor).filter(
-        Monitor.user_id == current_user.id
+        Monitor.user_id == current_user.id,
+        Monitor.id != monitor_id  # exclude the monitor being analyzed
     ).all()
     cross_summary = build_cross_summary(all_monitors, db)
 
