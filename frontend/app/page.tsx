@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { login, signup } from "@/lib/api"
+import { AppNavbarShell, PulseBrandLink } from "@/components/AppNavbar"
 
 export default function HomePage() {
   const router = useRouter()
@@ -34,12 +35,15 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <AppNavbarShell>
+        <PulseBrandLink href="/" />
+      </AppNavbarShell>
+      <div className="flex flex-1 items-center justify-center px-4 py-10">
       <div className="bg-white rounded-lg border border-gray-200 p-6 w-full max-w-sm">
         <div className="mb-8">
-          <h1 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-cyan-600 shrink-0" aria-hidden />
-            Pulse
+          <h1 className="text-lg font-semibold text-gray-900">
+            {isLogin ? "Sign in" : "Create account"}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
             {isLogin ? "Sign in to your account" : "Create your account"}
@@ -100,6 +104,7 @@ export default function HomePage() {
             {isLogin ? "Sign up" : "Sign in"}
           </button>
         </p>
+      </div>
       </div>
     </div>
   )

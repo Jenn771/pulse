@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import {
   CartesianGrid,
   Line,
@@ -21,14 +22,29 @@ type Props = {
   checks: Check[]
 }
 
+const MAX_CHART_POINTS = 400
+
+function downsampleEvenly<T>(arr: T[], max: number): T[] {
+  if (arr.length === 0) return []
+  if (arr.length <= max) return arr
+  const out: T[] = []
+  const last = arr.length - 1
+  for (let i = 0; i < max; i++) {
+    out.push(arr[Math.round((i / (max - 1)) * last)])
+  }
+  return out
+}
+
 export default function ResponseChart({ checks }: Props) {
-  const data = [...checks]
-    .filter((c) => c.response_time_ms != null)
-    .sort(
-      (a, b) =>
-        new Date(a.checked_at).getTime() - new Date(b.checked_at).getTime()
-    )
-    .map((c, index) => ({
+  const data = useMemo(() => {
+    const sorted = [...checks]
+      .filter((c) => c.response_time_ms != null)
+      .sort(
+        (a, b) =>
+          new Date(a.checked_at).getTime() - new Date(b.checked_at).getTime()
+      )
+    const sampled = downsampleEvenly(sorted, MAX_CHART_POINTS)
+    return sampled.map((c, index) => ({
       index,
       at: new Date(c.checked_at).toLocaleString(),
       shortTime: new Date(c.checked_at).toLocaleTimeString([], {
@@ -38,6 +54,7 @@ export default function ResponseChart({ checks }: Props) {
       ms: c.response_time_ms as number,
       status: String(c.status),
     }))
+  }, [checks])
 
   if (data.length === 0) {
     return (
@@ -54,7 +71,9 @@ export default function ResponseChart({ checks }: Props) {
           <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200" />
           <XAxis
             dataKey="index"
-            tickFormatter={(v: number) => data[v]?.shortTime ?? ""}
+            tickFormatter={(v: number) =>
+              data[Math.min(v, data.length - 1)]?.shortTime ?? ""
+            }
             interval="preserveStartEnd"
             minTickGap={24}
             tick={{ fontSize: 11 }}
