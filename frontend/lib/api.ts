@@ -129,10 +129,21 @@ export async function getMonitor(id: number) {
     return res.json()
   }
 
-export async function createMonitor(url: string, interval_minutes: number) {
+export async function createMonitor(
+  url: string,
+  interval_minutes: number,
+  name?: string | null
+) {
+  const payload: { url: string; interval_minutes: number; name?: string } = {
+    url,
+    interval_minutes,
+  }
+  const trimmed = name?.trim()
+  if (trimmed) payload.name = trimmed
+
   const res = await authFetch("/monitors/", {
     method: "POST",
-    body: JSON.stringify({ url, interval_minutes }),
+    body: JSON.stringify(payload),
   })
   if (!res.ok) {
     const err = await res.json()
