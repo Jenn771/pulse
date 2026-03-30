@@ -50,13 +50,15 @@ def handle_status_change(
     monitor: Monitor,
     new_status: str,
     previous_status: str,
-    db: Session
+    db: Session,
+    response_time_ms: float | None = None,
 ):
     if new_status in ["DOWN", "SLOW"] and previous_status == "UP":
         # Record the alert in the database
         alert = Alert(
             monitor_id=monitor.id,
-            type=AlertType(new_status)
+            type=AlertType(new_status),
+            response_time_ms=response_time_ms,
         )
         db.add(alert)
         db.commit()
@@ -138,7 +140,9 @@ def check_monitor(monitor_id: int):
         redis_client.set(f"status:{monitor_id}", new_status)
 
         # Handle status change alerts
-        handle_status_change(monitor, new_status, previous_status, db)
+        handle_status_change(
+            monitor, new_status, previous_status, db, elapsed_ms
+        )
 
         print(f"[INFO] Checked {monitor.url} — {new_status} ({elapsed_ms}ms)")
 

@@ -3,10 +3,9 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.database import get_db, redis_client
-from app.models import Monitor, Check
+from app.models import Monitor, Check, User
 from app.auth import get_current_user
 from app.schemas import MonitorCreate, MonitorUpdate, MonitorResponse
-from app.models import User
 from app.scheduler import scheduler
 from app.worker import register_monitor_job, remove_monitor_job
 
@@ -21,8 +20,9 @@ def create_monitor(
 ):
     new_monitor = Monitor(
         user_id=current_user.id,
+        name=monitor_data.name,
         url=str(monitor_data.url),
-        interval_minutes=monitor_data.interval_minutes
+        interval_minutes=monitor_data.interval_minutes,
     )
     db.add(new_monitor)
     db.commit()
@@ -151,9 +151,18 @@ def pause_monitor(
         remove_monitor_job(scheduler, monitor_id)
 
 
-    # Update Redis cache to reflect paused state
-    status_value = "PAUSED" if not monitor.is_active else "UNKNOWN"
-    redis_client.set(f"status:{monitor_id}", status_value)
+    # Update Redis cache to reflect paused / resumed state
+    if not monitor.is_active:
+        redis_client.set(f"status:{monitor_id}", "PAUSED")
+    else:
+        last_check = (
+            db.query(Check)
+            .filter(Check.monitor_id == monitor_id)
+            .order_by(Check.checked_at.desc())
+            .first()
+        )
+        status_value = last_check.status.value if last_check else "UNKNOWN"
+        redis_client.set(f"status:{monitor_id}", status_value)
 
     return monitor
 
@@ -184,8 +193,10 @@ def get_monitor_status(
         latest_check = db.query(Check).filter(
             Check.monitor_id == monitor_id
         ).order_by(Check.checked_at.desc()).first()
-        cached_status = latest_check.status if latest_check else "UNKNOWN"
+        cached_status = (
+            latest_check.status.value if latest_check else "UNKNOWN"
+        )
 
-        redis_client.set(f"status:{monitor_id}", cached_status)
+        redis_client.set(f"status:{monitor_id}", str(cached_status))
 
     return {"monitor_id": monitor_id, "status": cached_status}

@@ -39,6 +39,15 @@ class RefreshRequest(BaseModel):
 class MonitorCreate(BaseModel):
     url: HttpUrl
     interval_minutes: int = 5
+    name: Optional[str] = None
+
+    @field_validator("name")
+    @classmethod
+    def strip_name(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        s = v.strip()
+        return s if s else None
 
     @field_validator("interval_minutes")
     @classmethod
@@ -61,6 +70,7 @@ class MonitorUpdate(BaseModel):
 class MonitorResponse(BaseModel):
     id: int
     user_id: int
+    name: Optional[str] = None
     url: str
     interval_minutes: int
     is_active: bool
@@ -89,6 +99,7 @@ class AlertResponse(BaseModel):
     triggered_at: datetime
     resolved_at: Optional[datetime] = None
     type: AlertType
+    response_time_ms: Optional[float] = None
 
     model_config = {"from_attributes": True}
 

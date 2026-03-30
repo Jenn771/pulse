@@ -15,7 +15,7 @@ router = APIRouter()
 @router.get("/{monitor_id}/checks", response_model=List[CheckResponse])
 def get_checks(
     monitor_id: int,
-    hours: int = Query(default=24, ge=1, le=168),
+    hours: int = Query(default=24, ge=1, le=720),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):

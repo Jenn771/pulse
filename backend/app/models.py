@@ -37,6 +37,7 @@ class Monitor(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String, nullable=True)
     url = Column(String, nullable=False)
     interval_minutes = Column(Integer, default=5, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
@@ -70,6 +71,7 @@ class Alert(Base):
     # resolved_at is null until the site comes back up
     resolved_at = Column(DateTime(timezone=True), nullable=True)
     type = Column(Enum(AlertType), nullable=False)
+    response_time_ms = Column(Float, nullable=True)
 
     monitor = relationship("Monitor", back_populates="alerts")
 
