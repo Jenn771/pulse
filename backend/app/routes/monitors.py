@@ -144,16 +144,10 @@ def pause_monitor(
     db.commit()
     db.refresh(monitor)
 
-    # Register or remove the scheduled job based on new state
-    if monitor.is_active:
-        register_monitor_job(scheduler, monitor_id, monitor.interval_minutes)
-    else:
-        remove_monitor_job(scheduler, monitor_id)
-
-
-    # Update Redis cache to reflect paused / resumed state
+    # Paused: set Redis first so any still-queued job exits before hitting HTTP, then drop the job
     if not monitor.is_active:
         redis_client.set(f"status:{monitor_id}", "PAUSED")
+        remove_monitor_job(scheduler, monitor_id)
     else:
         last_check = (
             db.query(Check)
@@ -163,6 +157,7 @@ def pause_monitor(
         )
         status_value = last_check.status.value if last_check else "UNKNOWN"
         redis_client.set(f"status:{monitor_id}", status_value)
+        register_monitor_job(scheduler, monitor_id, monitor.interval_minutes)
 
     return monitor
 

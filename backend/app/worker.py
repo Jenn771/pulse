@@ -85,6 +85,9 @@ def check_monitor(monitor_id: int):
     db = SessionLocal()
 
     try:
+        if redis_client.get(f"status:{monitor_id}") == "PAUSED":
+            return
+
         monitor = db.query(Monitor).filter(Monitor.id == monitor_id).first()
 
         if not monitor or not monitor.is_active:
@@ -144,7 +147,12 @@ def check_monitor(monitor_id: int):
             monitor, new_status, previous_status, db, elapsed_ms
         )
 
-        print(f"[INFO] Checked {monitor.url} — {new_status} ({elapsed_ms}ms)")
+        ms_display = (
+            f"{elapsed_ms:.0f} ms"
+            if elapsed_ms is not None
+            else "no ms"
+        )
+        print(f"[INFO] Checked {monitor.url} — {new_status} ({ms_display})")
 
     except Exception as e:
         print(f"[ERROR] check_monitor failed for monitor {monitor_id}: {e}")
@@ -158,15 +166,20 @@ def check_monitor(monitor_id: int):
 def register_monitor_job(scheduler, monitor_id: int, interval_minutes: int):
     scheduler.add_job(
         check_monitor,
-        'interval',
+        "interval",
         minutes=interval_minutes,
         args=[monitor_id],
         id=f"monitor_{monitor_id}",
-        replace_existing=True
+        replace_existing=True,
+        max_instances=1,
+        coalesce=True,
     )
 
 
 def remove_monitor_job(scheduler, monitor_id: int):
     job_id = f"monitor_{monitor_id}"
-    if scheduler.get_job(job_id):
+    try:
         scheduler.remove_job(job_id)
+    except Exception:
+        # JobLookupError if already gone
+        pass
