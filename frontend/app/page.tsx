@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { login, signup } from "@/lib/api"
 
@@ -12,7 +12,7 @@ export default function HomePage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     setError("")
     setLoading(true)
@@ -35,10 +35,10 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 w-full max-w-sm">
+      <div className="bg-white rounded-lg border border-gray-200 p-6 w-full max-w-sm">
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-blue-600 shrink-0" aria-hidden />
+          <h1 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-cyan-600 shrink-0" aria-hidden />
             Pulse
           </h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -56,7 +56,7 @@ export default function HomePage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
               placeholder="you@example.com"
             />
           </div>
@@ -70,13 +70,13 @@ export default function HomePage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <p className="text-sm text-red-600">
               {error}
             </p>
           )}
@@ -84,7 +84,7 @@ export default function HomePage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className="w-full bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
             {loading ? "Please wait..." : isLogin ? "Sign in" : "Create account"}
           </button>
@@ -95,7 +95,7 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => { setIsLogin(!isLogin); setError("") }}
-            className="text-blue-600 hover:underline"
+            className="text-cyan-600 hover:underline"
           >
             {isLogin ? "Sign up" : "Sign in"}
           </button>
