@@ -36,6 +36,7 @@ export default function ResponseChart({ checks }: Props) {
         minute: "2-digit",
       }),
       ms: c.response_time_ms as number,
+      status: String(c.status),
     }))
 
   if (data.length === 0) {
@@ -47,7 +48,7 @@ export default function ResponseChart({ checks }: Props) {
   }
 
   return (
-    <div style={{ height: 256, width: "100%" }}>
+    <div style={{ height: 256, width: "100%", minHeight: 256 }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200" />
@@ -60,10 +61,18 @@ export default function ResponseChart({ checks }: Props) {
           />
           <YAxis width={56} tick={{ fontSize: 12 }} unit=" ms" domain={["auto", "auto"]} />
           <Tooltip
-            formatter={(value) => [
-              typeof value === "number" ? `${value} ms` : String(value ?? "—"),
-              "Response time",
-            ]}
+            formatter={(value, _name, item) => {
+              const payload = item?.payload as
+                | { status?: string }
+                | undefined
+              const status = payload?.status
+              const ms =
+                typeof value === "number" ? `${Math.round(value)} ms` : "—"
+              return [
+                status ? `${ms} (${status})` : ms,
+                "Response time",
+              ]
+            }}
             labelFormatter={(_, payload) =>
               (payload?.[0]?.payload as { at?: string })?.at ?? ""
             }
@@ -71,7 +80,7 @@ export default function ResponseChart({ checks }: Props) {
           <Line
             type="monotone"
             dataKey="ms"
-            stroke="#2563eb"
+            stroke="#0891b2"
             strokeWidth={2}
             dot={false}
             isAnimationActive={false}
