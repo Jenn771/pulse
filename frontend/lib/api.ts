@@ -33,7 +33,7 @@ async function authFetch(path: string, options: RequestInit = {}) {
           },
         })
       }
-      // Refresh failed so we clear tokens and redirect to login
+      // If refresh failed, we clear tokens and redirect to login
       localStorage.removeItem("access_token")
       localStorage.removeItem("refresh_token")
       window.location.href = "/"
