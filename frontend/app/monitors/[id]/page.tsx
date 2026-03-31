@@ -81,6 +81,7 @@ export default function MonitorDetailPage() {
   const [checksByRange, setChecksByRange] = useState<
     Record<number, Check[]>
   >({})
+  const [showAllAlerts, setShowAllAlerts] = useState(false)
 
   useEffect(() => {
     if (!localStorage.getItem("access_token")) {
@@ -135,6 +136,10 @@ export default function MonitorDetailPage() {
 
   async function handleAnalyze() {
     setAnalyzeError("")
+    if (checks.length === 0) {
+      setAnalyzeError("No check data yet — wait for the first monitoring interval before analyzing.")
+      return
+    }
     setAnalyzing(true)
     try {
       await analyzeMonitor(monitorId)
@@ -292,7 +297,7 @@ export default function MonitorDetailPage() {
               Incident history
             </h2>
             <div className="space-y-2">
-              {alerts.map((alert) => {
+              {(showAllAlerts ? alerts : alerts.slice(0, 3)).map((alert) => {
                 const duration = alert.resolved_at
                   ? Math.round(
                       (new Date(alert.resolved_at).getTime() -
@@ -332,6 +337,17 @@ export default function MonitorDetailPage() {
                 )
               })}
             </div>
+            {alerts.length > 3 && (
+              <button
+                type="button"
+                onClick={() => setShowAllAlerts((v) => !v)}
+                className="mt-3 text-sm font-medium text-cyan-600 hover:text-cyan-700"
+              >
+                {showAllAlerts
+                  ? "Show fewer"
+                  : `Show all ${alerts.length} incidents`}
+              </button>
+            )}
           </div>
         )}
 
@@ -357,7 +373,10 @@ export default function MonitorDetailPage() {
             </button>
           </div>
           {analyzeError && (
-            <p className="mb-3 text-sm text-red-600">{analyzeError}</p>
+            <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+              <span className="text-amber-500 text-sm mt-0.5">⚠</span>
+              <p className="text-sm text-amber-800">{analyzeError}</p>
+            </div>
           )}
           <AnalysisHistory analyses={analyses} />
         </div>
