@@ -205,49 +205,52 @@ export default function MonitorDetailPage() {
           </a>
         </header>
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="flex min-h-[7.5rem] flex-col rounded-lg border border-gray-200 bg-stone-100 p-5">
+        <div className="grid grid-cols-3 gap-3">
+          <div className="flex min-h-[7.5rem] min-w-0 flex-col rounded-lg border border-gray-200 bg-stone-100 p-5">
             <p className="text-[11px] font-medium leading-snug text-gray-500">
               Current status
             </p>
             <p
-              className={`mt-2 text-xl font-bold capitalize leading-tight ${statusWordClass(currentStatus)}`}
+              className={`mt-2 min-h-[1.75rem] text-xl font-bold capitalize leading-tight ${statusWordClass(currentStatus)}`}
             >
               {statusToWord(currentStatus)}
             </p>
+            <div className="mt-auto min-h-[2.5rem] pt-2" aria-hidden />
           </div>
-          <div className="flex min-h-[7.5rem] flex-col rounded-lg border border-gray-200 bg-stone-100 p-5">
+          <div className="flex min-h-[7.5rem] min-w-0 flex-col rounded-lg border border-gray-200 bg-stone-100 p-5">
             <p className="text-[11px] font-medium leading-snug text-gray-500">
               Uptime (30d)
             </p>
-            <p className="mt-2 text-xl font-bold tabular-nums leading-tight text-gray-900">
+            <p className="mt-2 min-h-[1.75rem] text-xl font-bold tabular-nums leading-tight text-gray-900">
               {uptime !== null ? `${uptime}%` : "—"}
             </p>
-            {totalChecks30d !== null && (
-              <p className="mt-auto pt-2 text-[11px] leading-snug text-gray-500">
+            {totalChecks30d !== null ? (
+              <p className="mt-auto min-h-[2.5rem] pt-2 text-[11px] leading-snug text-gray-500">
                 {totalChecks30d} checks
               </p>
+            ) : (
+              <div className="mt-auto min-h-[2.5rem] pt-2" aria-hidden />
             )}
           </div>
-          <div className="flex min-h-[7.5rem] flex-col rounded-lg border border-gray-200 bg-stone-100 p-5">
+          <div className="flex min-h-[7.5rem] min-w-0 flex-col rounded-lg border border-gray-200 bg-stone-100 p-5">
             <p className="text-[11px] font-medium leading-snug text-gray-500">
               Last check
             </p>
-            <p className="mt-2 text-xl font-bold tabular-nums leading-tight text-gray-900">
+            <p className="mt-2 min-h-[1.75rem] truncate text-xl font-bold tabular-nums leading-tight text-gray-900">
               {lastCheckAt ? formatRelativeTime(lastCheckAt) : "—"}
             </p>
-            <p className="mt-auto pt-2 text-[11px] leading-snug text-gray-500">
+            <p className="mt-auto min-h-[2.5rem] pt-2 text-[11px] leading-snug text-gray-500">
               Checked every {monitor.interval_minutes} min
             </p>
           </div>
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-base font-medium text-gray-900">
+          <div className="mb-4 flex min-w-0 flex-row items-center justify-between gap-3">
+            <h2 className="min-w-0 flex-1 truncate pr-2 text-base font-medium text-gray-900">
               Response time — {periodLabel}
             </h2>
-            <div className="flex overflow-hidden rounded-lg border border-gray-200 divide-x divide-gray-200">
+            <div className="flex w-fit shrink-0 overflow-hidden rounded-lg border border-gray-200 divide-x divide-gray-200">
               <button
                 type="button"
                 onClick={() => setHours(24)}
