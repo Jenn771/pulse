@@ -32,7 +32,7 @@ export default function AnalysisHistory({ analyses }: Props) {
       {analyses.map((a) => (
         <div
           key={a.id}
-          className="border border-gray-200 rounded-lg p-4"
+          className="border border-gray-200 rounded p-4"
         >
           <p className="text-xs text-gray-400 mb-2">
             {new Date(a.created_at).toLocaleString()}

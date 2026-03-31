@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   getMonitors,
@@ -14,7 +15,8 @@ import {
   getUptime,
 } from "@/lib/api"
 import MonitorCard, { type CheckRow } from "@/components/MonitorCard"
-import { AppNavbarShell, PulseBrandLink } from "@/components/AppNavbar"
+import { AppNavbarShell } from "@/components/AppNavbar"
+import { PulseLogo } from "@/components/Icons"
 
 type Monitor = {
   id: number
@@ -49,6 +51,7 @@ export default function DashboardPage() {
   const [addError, setAddError] = useState("")
   const [sortField, setSortField] = useState<"created_at" | "status" | "url">("created_at")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     if (!localStorage.getItem("access_token")) {
@@ -241,11 +244,20 @@ export default function DashboardPage() {
     }
   }
 
-  const sortedMonitors = useMemo(() => {
+  const filteredAndSortedMonitors = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
     const statusOrder: Record<string, number> = {
       UP: 0, SLOW: 1, DOWN: 2, PAUSED: 3, UNKNOWN: 4,
     }
-    return [...monitors].sort((a, b) => {
+    const filtered = q
+      ? monitors.filter((m) => {
+          const urlMatch = m.url.toLowerCase().includes(q)
+          const nameMatch = m.name?.toLowerCase().includes(q) ?? false
+          return urlMatch || nameMatch
+        })
+      : monitors
+
+    return [...filtered].sort((a, b) => {
       let comparison = 0
       if (sortField === "status") {
         const sa = statusOrder[statusById[a.id] ?? "UNKNOWN"] ?? 4
@@ -264,7 +276,7 @@ export default function DashboardPage() {
       }
       return sortDir === "asc" ? comparison : -comparison
     })
-  }, [monitors, statusById, sortField, sortDir])
+  }, [monitors, searchQuery, statusById, sortField, sortDir])
 
   function toggleSort(field: "created_at" | "status" | "url") {
     if (sortField === field) {
@@ -285,28 +297,37 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <p className="text-sm text-gray-500">Loading...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <AppNavbarShell>
-        <PulseBrandLink href="/dashboard" />
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 text-lg font-medium text-white transition-colors hover:text-gray-200"
+        >
+          <PulseLogo />
+          Pulse
+        </Link>
         <div className="relative" ref={menuRef}>
           <button
             type="button"
             onClick={() => setMenuOpen((o) => !o)}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-100 text-sm font-medium text-gray-700 ring-1 ring-gray-200 hover:bg-gray-200"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-700 text-sm font-medium text-white ring-1 ring-gray-600 transition hover:bg-gray-600"
             aria-expanded={menuOpen}
             aria-haspopup="true"
           >
             {avatarLetter}
           </button>
           {menuOpen && (
-            <div className="absolute right-0 mt-2 w-56 rounded-lg border border-gray-200 bg-white py-1 z-20 overflow-hidden shadow-lg">
+            <div className="absolute right-0 mt-2 z-20 w-56 overflow-hidden rounded border border-gray-200 bg-white py-1 shadow-lg">
+              <div className="px-4 py-2 text-xs font-medium uppercase text-gray-400">
+                Account
+              </div>
               <p className="px-4 py-2 text-sm text-gray-700 truncate" title={userEmail ?? ""}>
                 {userEmail ?? "—"}
               </p>
@@ -317,7 +338,7 @@ export default function DashboardPage() {
                   setMenuOpen(false)
                   logout()
                 }}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
               >
                 Sign out
               </button>
@@ -326,43 +347,94 @@ export default function DashboardPage() {
         </div>
       </AppNavbarShell>
 
-      <main className="max-w-6xl mx-auto px-6 py-8 space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-lg font-semibold text-gray-900">All monitors</h1>
-          <button
-            type="button"
-            onClick={() => {
-              setAddError("")
-              setModalOpen(true)
-            }}
-            className="shrink-0 self-start bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg px-4 py-2 text-sm font-medium"
-          >
-            + Add monitor
-          </button>
+      <main className="mx-auto max-w-6xl space-y-7 px-6 py-8">
+        <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl text-gray-900">
+              Service Monitors
+            </h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg
+                  className="h-4 w-4 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </span>
+              <input
+                type="text"
+                placeholder="Search monitors..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 md:w-64"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setAddError("")
+                setModalOpen(true)
+              }}
+              className="flex items-center gap-2 rounded bg-cyan-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-cyan-700"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Add Monitor
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-stone-100 rounded-lg border border-gray-200 p-5">
-            <p className="text-sm text-gray-600">Total monitors</p>
-            <p className="text-xl font-semibold text-gray-900 mt-1 tabular-nums">
+          <div className="rounded border border-gray-200 bg-white p-5">
+            <p className="text-xs uppercase tracking-wide text-gray-500">
+              Total monitors
+            </p>
+            <p className="mt-1 text-xl tabular-nums text-gray-900">
               {totalMonitors}
             </p>
           </div>
-          <div className="bg-stone-100 rounded-lg border border-gray-200 p-5">
-            <p className="text-sm text-gray-600">Currently up</p>
-            <p className="text-xl font-semibold text-gray-900 mt-1 tabular-nums">
+          <div className="rounded border border-gray-200 bg-white p-5">
+            <p className="text-xs uppercase tracking-wide text-gray-500">
+              Currently up
+            </p>
+            <p className="mt-1 text-xl tabular-nums text-gray-900">
               {currentlyUp}
             </p>
           </div>
-          <div className="bg-stone-100 rounded-lg border border-gray-200 p-5">
-            <p className="text-sm text-gray-600">Currently down</p>
-            <p className="text-xl font-semibold text-gray-900 mt-1 tabular-nums">
+          <div className="rounded border border-gray-200 bg-white p-5">
+            <p className="text-xs uppercase tracking-wide text-gray-500">
+              Currently down
+            </p>
+            <p className="mt-1 text-xl tabular-nums text-gray-900">
               {currentlyDown}
             </p>
           </div>
-          <div className="bg-stone-100 rounded-lg border border-gray-200 p-5">
-            <p className="text-sm text-gray-600">Incidents today</p>
-            <p className="text-xl font-semibold text-gray-900 mt-1 tabular-nums">
+          <div className="rounded border border-gray-200 bg-white p-5">
+            <p className="text-xs uppercase tracking-wide text-gray-500">
+              Incidents today
+            </p>
+            <p className="mt-1 text-xl tabular-nums text-gray-900">
               {incidentsToday}
             </p>
           </div>
@@ -370,11 +442,11 @@ export default function DashboardPage() {
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
-        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded border border-gray-200 bg-white">
           <table className="min-w-[880px] w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50/90 text-left">
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 cursor-pointer select-none"
+              <tr className="border-b border-gray-200 bg-gray-50 text-left">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500 cursor-pointer select-none"
                     onClick={() => toggleSort("status")}>
                   <span className="flex items-center gap-1">
                     Status
@@ -383,7 +455,7 @@ export default function DashboardPage() {
                     </span>
                   </span>
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 cursor-pointer select-none"
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500 cursor-pointer select-none"
                     onClick={() => toggleSort("url")}>
                   <span className="flex items-center gap-1">
                     Name
@@ -392,16 +464,16 @@ export default function DashboardPage() {
                     </span>
                   </span>
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
                   Domain
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
                   Checks
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
                   Response
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
                   Uptime 30d
                 </th>
                 <th className="w-12 px-2 py-3" aria-hidden />
@@ -421,7 +493,7 @@ export default function DashboardPage() {
                   </td>
                 </tr>
               ) : (
-                sortedMonitors.map((monitor) => (
+                filteredAndSortedMonitors.map((monitor) => (
                   <MonitorCard
                     key={monitor.id}
                     monitor={monitor}
@@ -445,7 +517,7 @@ export default function DashboardPage() {
           onClick={() => setModalOpen(false)}
         >
           <div
-            className="relative w-full max-w-md rounded-lg bg-white p-6 border border-gray-200"
+            className="relative w-full max-w-md rounded bg-white p-8 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -456,64 +528,67 @@ export default function DashboardPage() {
             >
               ✕
             </button>
-            <h2 className="text-lg font-semibold text-gray-900 pr-8">Add a monitor</h2>
-            <form onSubmit={handleAddMonitor} className="mt-6 space-y-4">
+            <h2 className="text-2xl font-medium text-gray-900">New Monitor</h2>
+            <p className="mt-1 mb-6 text-gray-500">
+              Configure a new website to track.
+            </p>
+            <form onSubmit={handleAddMonitor} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name
+                <label className="mb-1.5 block text-xs font-medium uppercase text-gray-400">
+                  Display Name
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Production API"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  placeholder="Production API"
+                  className="w-full rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  URL
+                <label className="mb-1.5 block text-xs font-medium uppercase text-gray-400">
+                  Target URL *
                 </label>
                 <input
+                  required
                   type="url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  required
-                  placeholder="https://example.com"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  placeholder="https://api.myapp.com"
+                  className="w-full rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Interval
+                <label className="mb-1.5 block text-xs font-medium uppercase text-gray-400">
+                  Check Frequency
                 </label>
                 <select
                   value={interval}
                   onChange={(e) => setInterval(Number(e.target.value))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm focus:border-cyan-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 >
-                  <option value={1}>1 min</option>
-                  <option value={5}>5 min</option>
-                  <option value={10}>10 min</option>
+                  <option value={1}>Every 1 minute</option>
+                  <option value={5}>Every 5 minutes</option>
+                  <option value={10}>Every 10 minutes</option>
                 </select>
               </div>
               {addError && (
-                <p className="text-red-600 text-sm">{addError}</p>
+                <p className="text-xs text-red-600">{addError}</p>
               )}
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1 rounded border border-gray-200 px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={adding}
-                  className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-50"
+                  className="flex-1 rounded bg-cyan-600 px-4 py-3 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-50"
                 >
-                  {adding ? "Adding..." : "Add monitor"}
+                  {adding ? "Creating..." : "Save Monitor"}
                 </button>
               </div>
             </form>

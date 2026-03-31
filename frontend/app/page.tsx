@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { login, signup } from "@/lib/api"
-import { AppNavbarShell, PulseBrandLink } from "@/components/AppNavbar"
+import { PulseLogo } from "@/components/Icons"
 
 export default function HomePage() {
   const router = useRouter()
@@ -35,14 +35,16 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <AppNavbarShell>
-        <PulseBrandLink href="/" />
-      </AppNavbarShell>
-      <div className="flex flex-1 items-center justify-center px-4 py-10">
-      <div className="bg-white rounded-lg border border-gray-200 p-6 w-full max-w-sm">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="fixed top-0 left-0 right-0 h-14 bg-gray-900 flex items-center px-6">
+        <span className="flex items-center gap-2 text-white font-medium">
+          <PulseLogo />
+          Pulse
+        </span>
+      </div>
+      <div className="bg-white rounded border border-gray-200 p-8 w-full max-w-sm mt-14">
         <div className="mb-8">
-          <h1 className="text-lg font-semibold text-gray-900">
+          <h1 className="text-lg font-medium text-gray-900">
             {isLogin ? "Sign in" : "Create account"}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -60,7 +62,7 @@ export default function HomePage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
               placeholder="you@example.com"
             />
           </div>
@@ -74,7 +76,7 @@ export default function HomePage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
               placeholder="••••••••"
             />
           </div>
@@ -88,7 +90,7 @@ export default function HomePage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className="w-full bg-cyan-600 hover:bg-cyan-700 text-white rounded px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
             {loading ? "Please wait..." : isLogin ? "Sign in" : "Create account"}
           </button>
@@ -104,7 +106,6 @@ export default function HomePage() {
             {isLogin ? "Sign up" : "Sign in"}
           </button>
         </p>
-      </div>
       </div>
     </div>
   )

@@ -164,7 +164,7 @@ export default function MonitorDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <p className="text-sm text-gray-500">Loading...</p>
       </div>
     )
@@ -174,16 +174,23 @@ export default function MonitorDetailPage() {
 
   const periodLabel =
     hours === 24 ? "24h" : hours === 168 ? "7 days" : "30 days"
+  const statusBorder: Record<string, string> = {
+    UP: "border-l-4 border-l-green-500",
+    DOWN: "border-l-4 border-l-red-500",
+    SLOW: "border-l-4 border-l-amber-500",
+    PAUSED: "border-l-4 border-l-gray-400",
+    UNKNOWN: "border-l-4 border-l-gray-300",
+  }
 
   const displayTitle = monitor.name?.trim() || hostnameFromUrl(monitor.url)
   const fullUrl = fullUrlFromMonitor(monitor.url)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white">
       <AppNavbarShell>
         <Link
           href="/dashboard"
-          className="text-sm font-medium text-cyan-600 hover:text-cyan-700"
+          className="text-sm font-medium text-cyan-400 hover:text-cyan-300"
         >
           ← Back to dashboard
         </Link>
@@ -192,7 +199,7 @@ export default function MonitorDetailPage() {
 
       <main className="mx-auto max-w-6xl space-y-8 px-6 py-8">
         <header className="space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-2xl font-medium tracking-tight text-gray-900">
             {displayTitle}
           </h1>
           <a
@@ -206,22 +213,22 @@ export default function MonitorDetailPage() {
         </header>
 
         <div className="grid grid-cols-3 gap-3">
-          <div className="flex min-h-[7.5rem] min-w-0 flex-col rounded-lg border border-gray-200 bg-stone-100 p-5">
-            <p className="text-[11px] font-medium leading-snug text-gray-500">
+          <div className={`flex min-h-[7.5rem] min-w-0 flex-col rounded border border-gray-200 bg-white p-5 ${statusBorder[currentStatus] ?? statusBorder.UNKNOWN}`}>
+            <p className="text-xs uppercase tracking-wide text-gray-500">
               Current status
             </p>
             <p
-              className={`mt-2 min-h-[1.75rem] text-xl font-bold capitalize leading-tight ${statusWordClass(currentStatus)}`}
+              className={`mt-1 min-h-[1.75rem] text-xl capitalize leading-tight ${statusWordClass(currentStatus)}`}
             >
               {statusToWord(currentStatus)}
             </p>
             <div className="mt-auto min-h-[2.5rem] pt-2" aria-hidden />
           </div>
-          <div className="flex min-h-[7.5rem] min-w-0 flex-col rounded-lg border border-gray-200 bg-stone-100 p-5">
-            <p className="text-[11px] font-medium leading-snug text-gray-500">
+          <div className="flex min-h-[7.5rem] min-w-0 flex-col rounded border border-gray-200 bg-white p-5">
+            <p className="text-xs uppercase tracking-wide text-gray-500">
               Uptime (30d)
             </p>
-            <p className="mt-2 min-h-[1.75rem] text-xl font-bold tabular-nums leading-tight text-gray-900">
+            <p className="mt-1 min-h-[1.75rem] text-xl tabular-nums leading-tight text-gray-900">
               {uptime !== null ? `${uptime}%` : "—"}
             </p>
             {totalChecks30d !== null ? (
@@ -232,11 +239,11 @@ export default function MonitorDetailPage() {
               <div className="mt-auto min-h-[2.5rem] pt-2" aria-hidden />
             )}
           </div>
-          <div className="flex min-h-[7.5rem] min-w-0 flex-col rounded-lg border border-gray-200 bg-stone-100 p-5">
-            <p className="text-[11px] font-medium leading-snug text-gray-500">
+          <div className="flex min-h-[7.5rem] min-w-0 flex-col rounded border border-gray-200 bg-white p-5">
+            <p className="text-xs uppercase tracking-wide text-gray-500">
               Last check
             </p>
-            <p className="mt-2 min-h-[1.75rem] truncate text-xl font-bold tabular-nums leading-tight text-gray-900">
+            <p className="mt-1 min-h-[1.75rem] truncate text-xl tabular-nums leading-tight text-gray-900">
               {lastCheckAt ? formatRelativeTime(lastCheckAt) : "—"}
             </p>
             <p className="mt-auto min-h-[2.5rem] pt-2 text-[11px] leading-snug text-gray-500">
@@ -245,12 +252,12 @@ export default function MonitorDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="rounded border border-gray-200 bg-white p-6">
           <div className="mb-4 flex min-w-0 flex-row items-center justify-between gap-3">
             <h2 className="min-w-0 flex-1 truncate pr-2 text-base font-medium text-gray-900">
               Response time — {periodLabel}
             </h2>
-            <div className="flex w-fit shrink-0 overflow-hidden rounded-lg border border-gray-200 divide-x divide-gray-200">
+            <div className="flex w-fit shrink-0 overflow-hidden rounded border border-gray-200 divide-x divide-gray-200">
               <button
                 type="button"
                 onClick={() => setHours(24)}
@@ -295,7 +302,7 @@ export default function MonitorDetailPage() {
         </div>
 
         {alerts.length > 0 && (
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
+          <div className="rounded border border-gray-200 bg-white p-6">
             <h2 className="mb-4 text-base font-medium text-gray-900">
               Incident history
             </h2>
@@ -354,7 +361,7 @@ export default function MonitorDetailPage() {
           </div>
         )}
 
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="rounded border border-gray-200 bg-white p-6">
           <div className="mb-4 flex items-center justify-between gap-4">
             <h2 className="text-base font-medium text-gray-900">
               AI reliability analysis
@@ -363,7 +370,7 @@ export default function MonitorDetailPage() {
               type="button"
               onClick={handleAnalyze}
               disabled={analyzing}
-              className="inline-flex min-w-[96px] shrink-0 items-center justify-center gap-2 rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-50"
+              className="inline-flex min-w-[96px] shrink-0 items-center justify-center gap-2 rounded bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-50"
             >
               {analyzing ? (
                 <span
@@ -376,7 +383,7 @@ export default function MonitorDetailPage() {
             </button>
           </div>
           {analyzeError && (
-            <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+            <div className="mb-3 flex items-start gap-2 rounded border border-amber-200 bg-amber-50 px-3 py-2">
               <span className="text-amber-500 text-sm mt-0.5">⚠</span>
               <p className="text-sm text-amber-800">{analyzeError}</p>
             </div>

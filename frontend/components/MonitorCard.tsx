@@ -176,15 +176,15 @@ function SparklineBars({ checks }: { checks: CheckRow[] }) {
             onMouseEnter={cancelClose}
             onMouseLeave={scheduleClose}
           >
-            <div className="min-w-[9rem] rounded-xl border border-gray-200 bg-stone-100 px-3 py-2.5 text-left shadow-lg ring-1 ring-cyan-600/15">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-cyan-700">
+            <div className="min-w-[9rem] rounded-md border border-gray-200 bg-stone-100 px-3 py-2.5 text-left shadow-lg ring-1 ring-cyan-600/15">
+              <p className="text-[10px] font-medium uppercase tracking-wide text-cyan-700">
                 {new Date(tip.check.checked_at).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
               </p>
 
-              <p className="mt-1 text-lg font-semibold tabular-nums tracking-tight text-gray-900">
+              <p className="mt-1 text-lg font-medium tabular-nums tracking-tight text-gray-900">
                 {tip.check.response_time_ms != null
                   ? `${Math.round(tip.check.response_time_ms)}`
                   : "—"}
@@ -287,12 +287,12 @@ export default function MonitorCard({
 
   return (
     <tr
-      className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-gray-50/90"
+      className="cursor-pointer border-b border-gray-100 last:border-0 transition-colors hover:bg-slate-50"
       onClick={() => router.push(`/monitors/${monitor.id}`)}
     >
       <td className="px-4 py-3 align-middle whitespace-nowrap">
         <span
-          className={`text-sm font-semibold capitalize ${statusWordClass(status)}`}
+          className={`text-sm font-medium capitalize ${statusWordClass(status)}`}
         >
           {statusToWord(status)}
         </span>
@@ -302,7 +302,7 @@ export default function MonitorCard({
           {displayName}
         </div>
       </td>
-      <td className="px-4 py-3 align-middle text-gray-800">
+      <td className="px-4 py-3 align-middle text-gray-700">
         <span className="text-sm">{host}</span>
       </td>
       <td className="min-w-0 max-w-[min(100%,11rem)] px-4 py-3 align-middle">
@@ -321,7 +321,7 @@ export default function MonitorCard({
         <button
           ref={menuButtonRef}
           type="button"
-          className="rounded-lg p-2 text-gray-700 hover:bg-gray-100"
+          className="rounded p-2 text-gray-700 hover:bg-gray-100"
           aria-expanded={menuOpen}
           aria-haspopup="menu"
           aria-label="Monitor actions"
@@ -330,7 +330,7 @@ export default function MonitorCard({
             setMenuOpen((o) => !o)
           }}
         >
-          <span className="text-lg font-bold leading-none">⋮</span>
+          <span className="text-lg font-medium leading-none">⋮</span>
         </button>
         {menuOpen &&
           menuCoords &&
@@ -338,7 +338,7 @@ export default function MonitorCard({
           createPortal(
             <div
               ref={menuRef}
-              className="fixed z-[100] w-32 rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+              className="fixed z-[100] w-32 rounded border border-gray-200 bg-white py-1 shadow-lg"
               style={{ top: menuCoords.top, left: menuCoords.left }}
               role="menu"
             >
