@@ -67,7 +67,10 @@ export default function ResponseChart({ checks }: Props) {
   return (
     <div style={{ height: 256, width: "100%", minHeight: 256 }}>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+        <LineChart
+          data={data}
+          margin={{ top: 32, right: 12, left: 8, bottom: 36 }}
+        >
           <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200" />
           <XAxis
             dataKey="index"
@@ -77,8 +80,18 @@ export default function ResponseChart({ checks }: Props) {
             interval="preserveStartEnd"
             minTickGap={24}
             tick={{ fontSize: 11 }}
+            tickMargin={10}
+            height={36}
           />
-          <YAxis width={56} tick={{ fontSize: 12 }} unit=" ms" domain={["auto", "auto"]} />
+          <YAxis
+            width={56}
+            tick={{ fontSize: 10 }}
+            tickMargin={6}
+            tickFormatter={(v: number) =>
+              typeof v === "number" ? `${Math.round(v)} ms` : String(v)
+            }
+            domain={["auto", "auto"]}
+          />
           <Tooltip
             formatter={(value, _name, item) => {
               const payload = item?.payload as
