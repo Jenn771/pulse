@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import {
   getMonitors,
@@ -47,6 +47,8 @@ export default function DashboardPage() {
   const [interval, setInterval] = useState(5)
   const [adding, setAdding] = useState(false)
   const [addError, setAddError] = useState("")
+  const [sortField, setSortField] = useState<"created_at" | "status" | "url">("created_at")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
 
   useEffect(() => {
     if (!localStorage.getItem("access_token")) {
@@ -239,6 +241,40 @@ export default function DashboardPage() {
     }
   }
 
+  const sortedMonitors = useMemo(() => {
+    const statusOrder: Record<string, number> = {
+      UP: 0, SLOW: 1, DOWN: 2, PAUSED: 3, UNKNOWN: 4,
+    }
+    return [...monitors].sort((a, b) => {
+      let comparison = 0
+      if (sortField === "status") {
+        const sa = statusOrder[statusById[a.id] ?? "UNKNOWN"] ?? 4
+        const sb = statusOrder[statusById[b.id] ?? "UNKNOWN"] ?? 4
+        comparison = sa - sb
+      } else if (sortField === "url") {
+        try {
+          const nameA = (a.name?.trim() || new URL(a.url).hostname).toLowerCase()
+          const nameB = (b.name?.trim() || new URL(b.url).hostname).toLowerCase()
+          comparison = nameA.localeCompare(nameB)
+        } catch {
+          comparison = a.url.localeCompare(b.url)
+        }
+      } else {
+        comparison = new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+      return sortDir === "asc" ? comparison : -comparison
+    })
+  }, [monitors, statusById, sortField, sortDir])
+
+  function toggleSort(field: "created_at" | "status" | "url") {
+    if (sortField === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"))
+    } else {
+      setSortField(field)
+      setSortDir("asc")
+    }
+  }
+
   const totalMonitors = monitors.length
   const currentlyUp = monitors.filter((m) => m.is_active).length
   const currentlyDown = monitors.filter((m) => !m.is_active).length
@@ -338,11 +374,23 @@ export default function DashboardPage() {
           <table className="min-w-[880px] w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50/90 text-left">
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  Status
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 cursor-pointer select-none"
+                    onClick={() => toggleSort("status")}>
+                  <span className="flex items-center gap-1">
+                    Status
+                    <span className="inline-block w-3 text-center text-gray-400">
+                      {sortField === "status" ? (sortDir === "asc" ? "↑" : "↓") : "⇅"}
+                    </span>
+                  </span>
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  Name
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 cursor-pointer select-none"
+                    onClick={() => toggleSort("url")}>
+                  <span className="flex items-center gap-1">
+                    Name
+                    <span className="inline-block w-3 text-center text-gray-400">
+                      {sortField === "url" ? (sortDir === "asc" ? "↑" : "↓") : "⇅"}
+                    </span>
+                  </span>
                 </th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
                   Domain
@@ -373,7 +421,7 @@ export default function DashboardPage() {
                   </td>
                 </tr>
               ) : (
-                monitors.map((monitor) => (
+                sortedMonitors.map((monitor) => (
                   <MonitorCard
                     key={monitor.id}
                     monitor={monitor}
