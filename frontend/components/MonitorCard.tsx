@@ -1,6 +1,12 @@
 "use client"
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import { hostnameFromUrl } from "@/lib/urlUtils"
@@ -35,22 +41,90 @@ type Props = {
 function barClass(status: string): string {
   switch (status.toUpperCase()) {
     case "UP":
-      return "bg-green-500"
+      return "bg-green-500 hover:bg-green-600"
     case "DOWN":
-      return "bg-red-500"
+      return "bg-red-500 hover:bg-red-600"
     case "SLOW":
-      return "bg-amber-400"
+      return "bg-amber-400 hover:bg-amber-500"
     default:
-      return "bg-gray-300"
+      return "bg-gray-300 hover:bg-gray-400"
   }
 }
 
+function statusDotClass(status: string): string {
+  switch (status.toUpperCase()) {
+    case "UP":
+      return "bg-green-400"
+    case "DOWN":
+      return "bg-red-400"
+    case "SLOW":
+      return "bg-amber-400"
+    default:
+      return "bg-gray-400"
+  }
+}
+
+const SPARK_BAR_PX = 4
+const SPARK_GAP_PX = 1
+const SPARK_MAX_POINTS = 40
+
 function SparklineBars({ checks }: { checks: CheckRow[] }) {
-  const sorted = [...checks].sort(
-    (a, b) =>
-      new Date(a.checked_at).getTime() - new Date(b.checked_at).getTime()
-  )
-  const slice = sorted.slice(-40)
+  const [tip, setTip] = useState<{
+    check: CheckRow
+    left: number
+    top: number
+  } | null>(null)
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [capacity, setCapacity] = useState(SPARK_MAX_POINTS)
+
+  const cancelClose = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+  }
+
+  const scheduleClose = () => {
+    cancelClose()
+    closeTimerRef.current = setTimeout(() => setTip(null), 120)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    function update() {
+      const node = containerRef.current
+      if (!node) return
+      const w = node.getBoundingClientRect().width
+      if (w < 1) return
+      const step = SPARK_BAR_PX + SPARK_GAP_PX
+      const n = Math.max(
+        1,
+        Math.min(SPARK_MAX_POINTS, Math.floor((w + SPARK_GAP_PX) / step))
+      )
+      setCapacity(n)
+    }
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  const slice = useMemo(() => {
+    const sorted = [...checks].sort(
+      (a, b) =>
+        new Date(a.checked_at).getTime() - new Date(b.checked_at).getTime()
+    )
+    const take = Math.min(SPARK_MAX_POINTS, capacity, sorted.length)
+    return sorted.slice(-take)
+  }, [checks, capacity])
 
   if (slice.length === 0) {
     return (
@@ -61,15 +135,78 @@ function SparklineBars({ checks }: { checks: CheckRow[] }) {
   }
 
   return (
-    <div className="flex h-6 min-w-[7rem] max-w-[10rem] items-end gap-0.5">
-      {slice.map((c) => (
-        <div
-          key={c.id}
-          className={`h-6 w-1 shrink-0 rounded-sm ${barClass(c.status)}`}
-          title={c.status}
-        />
-      ))}
-    </div>
+    <>
+      <div
+        ref={containerRef}
+        className="h-6 w-full min-w-0 overflow-hidden"
+      >
+        <div className="flex h-6 items-end justify-start gap-px">
+          {slice.map((bar) => (
+            <div
+              key={bar.id}
+              className="relative w-1 shrink-0"
+              onMouseEnter={(e) => {
+                cancelClose()
+                const r = e.currentTarget.getBoundingClientRect()
+                setTip({
+                  check: bar,
+                  left: r.left + r.width / 2,
+                  top: r.top,
+                })
+              }}
+              onMouseLeave={scheduleClose}
+            >
+              <div
+                className={`h-6 w-1 cursor-default transition-colors ${barClass(bar.status)}`}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+      {tip &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed z-[200]"
+            style={{
+              left: tip.left,
+              top: tip.top,
+              transform: "translate(-50%, calc(-100% - 0.35rem))",
+            }}
+            onMouseEnter={cancelClose}
+            onMouseLeave={scheduleClose}
+          >
+            <div className="min-w-[9rem] rounded-xl border border-gray-200 bg-stone-100 px-3 py-2.5 text-left shadow-lg ring-1 ring-cyan-600/15">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-cyan-700">
+                {new Date(tip.check.checked_at).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+
+              <p className="mt-1 text-lg font-semibold tabular-nums tracking-tight text-gray-900">
+                {tip.check.response_time_ms != null
+                  ? `${Math.round(tip.check.response_time_ms)}`
+                  : "—"}
+                <span className="ml-1 text-sm font-medium text-gray-500">ms</span>
+              </p>
+
+              <div className="mt-2 flex items-center gap-2 border-t border-gray-200 pt-2">
+                <span
+                  className={`h-2 w-2 shrink-0 rounded-full ${statusDotClass(
+                    tip.check.status
+                  )}`}
+                  aria-hidden
+                />
+                <span className="text-xs font-medium capitalize text-gray-700">
+                  {tip.check.status.toLowerCase()}
+                </span>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+    </>
   )
 }
 
@@ -168,7 +305,7 @@ export default function MonitorCard({
       <td className="px-4 py-3 align-middle text-gray-800">
         <span className="text-sm">{host}</span>
       </td>
-      <td className="px-4 py-3 align-middle">
+      <td className="min-w-0 max-w-[min(100%,11rem)] px-4 py-3 align-middle">
         <SparklineBars checks={checks} />
       </td>
       <td className="px-4 py-3 align-middle whitespace-nowrap text-sm font-medium tabular-nums text-gray-900">
