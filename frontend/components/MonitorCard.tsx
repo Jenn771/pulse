@@ -231,6 +231,7 @@ export default function MonitorCard({
 }: Props) {
   const router = useRouter()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [menuCoords, setMenuCoords] = useState<{
     top: number
     left: number
@@ -359,11 +360,56 @@ export default function MonitorCard({
                 className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
                 onClick={() => {
                   setMenuOpen(false)
-                  onDelete(monitor.id)
+                  setConfirmingDelete(true)
                 }}
               >
                 Delete
               </button>
+            </div>,
+            document.body
+          )}
+        {confirmingDelete &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+              onClick={() => setConfirmingDelete(false)}
+            >
+              <div
+                className="w-full max-w-sm rounded border border-gray-200 bg-white p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-base font-medium text-gray-900">
+                  Delete monitor
+                </h3>
+                <p className="mt-2 text-sm text-gray-500">
+                  Are you sure you want to delete{" "}
+                  <span className="font-medium text-gray-700">
+                    {monitor.name?.trim() || new URL(monitor.url).hostname}
+                  </span>
+                  ? This will remove all checks, alerts, and analyses. This
+                  cannot be undone.
+                </p>
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingDelete(false)}
+                    className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmingDelete(false)
+                      onDelete(monitor.id)
+                    }}
+                    className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             </div>,
             document.body
           )}
