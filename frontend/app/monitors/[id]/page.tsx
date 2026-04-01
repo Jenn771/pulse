@@ -301,65 +301,71 @@ export default function MonitorDetailPage() {
           </div>
         </div>
 
-        {alerts.length > 0 && (
-          <div className="rounded border border-gray-200 bg-white p-6">
-            <h2 className="mb-4 text-base font-medium text-gray-900">
-              Incident history
-            </h2>
-            <div className="space-y-2">
-              {(showAllAlerts ? alerts : alerts.slice(0, 3)).map((alert) => {
-                const duration = alert.resolved_at
-                  ? Math.round(
-                      (new Date(alert.resolved_at).getTime() -
-                        new Date(alert.triggered_at).getTime()) /
-                        1000
-                    )
-                  : null
-                const durationText =
-                  duration !== null
-                    ? duration < 60
-                      ? `${duration}s`
-                      : `${Math.round(duration / 60)}m`
-                    : "Ongoing"
+        <div className="rounded border border-gray-200 bg-white p-6">
+          <h2 className="mb-4 text-base font-medium text-gray-900">
+            Incident history
+          </h2>
+          {alerts.length === 0 ? (
+            <p className="text-sm text-gray-500">
+              No incidents yet.
+            </p>
+          ) : (
+            <>
+              <div className="space-y-2">
+                {(showAllAlerts ? alerts : alerts.slice(0, 3)).map((alert) => {
+                  const duration = alert.resolved_at
+                    ? Math.round(
+                        (new Date(alert.resolved_at).getTime() -
+                          new Date(alert.triggered_at).getTime()) /
+                          1000
+                      )
+                    : null
+                  const durationText =
+                    duration !== null
+                      ? duration < 60
+                        ? `${duration}s`
+                        : `${Math.round(duration / 60)}m`
+                      : "Ongoing"
 
-                return (
-                  <div
-                    key={alert.id}
-                    className="flex flex-col gap-1 border-b border-gray-100 py-2 text-sm last:border-0 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <span className="font-medium text-gray-800">
-                        {alert.type}
-                      </span>
-                      <span className="text-gray-600">
-                        {new Date(alert.triggered_at).toLocaleString()}
-                      </span>
-                      {alert.response_time_ms != null && (
-                        <span className="text-xs text-gray-500 tabular-nums">
-                          {Math.round(alert.response_time_ms)} ms
+                  return (
+                    <div
+                      key={alert.id}
+                      className="flex flex-col gap-1 border-b border-gray-100 py-2 text-sm last:border-0 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                        <span className="font-medium text-gray-800">
+                          {alert.type}
                         </span>
-                      )}
+                        <span className="text-gray-600">
+                          {new Date(alert.triggered_at).toLocaleString()}
+                        </span>
+                        {alert.response_time_ms != null && (
+                          <span className="text-xs text-gray-500 tabular-nums">
+                            {Math.round(alert.response_time_ms)} ms
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-400 shrink-0">
+                        Duration: {durationText}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-400 shrink-0">
-                      Duration: {durationText}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-            {alerts.length > 3 && (
-              <button
-                type="button"
-                onClick={() => setShowAllAlerts((v) => !v)}
-                className="mt-3 text-sm font-medium text-cyan-600 hover:text-cyan-700"
-              >
-                {showAllAlerts
-                  ? "Show fewer"
-                  : `Show all ${alerts.length} incidents`}
-              </button>
-            )}
-          </div>
-        )}
+                  )
+                })}
+              </div>
+              {alerts.length > 3 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllAlerts((v) => !v)}
+                  className="mt-3 text-sm font-medium text-cyan-600 hover:text-cyan-700"
+                >
+                  {showAllAlerts
+                    ? "Show fewer"
+                    : `Show all ${alerts.length} incidents`}
+                </button>
+              )}
+            </>
+          )}
+        </div>
 
         <div className="rounded border border-gray-200 bg-white p-6">
           <div className="mb-4 flex items-center justify-between gap-4">
