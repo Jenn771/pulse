@@ -71,7 +71,7 @@ def analyze_monitor(
 
         if last_created.tzinfo is None:
             last_created = last_created.replace(tzinfo=timezone.utc)
-        if last_created > datetime.now(timezone.utc) - timedelta(hours=1):
+        if last_created > datetime.now(timezone.utc) - timedelta(minutes=1):
             raise HTTPException(
                 status_code=429,
                 detail="Rate limit: once per hour per monitor"
