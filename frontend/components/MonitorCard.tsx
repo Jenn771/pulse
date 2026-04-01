@@ -64,8 +64,6 @@ function statusDotClass(status: string): string {
   }
 }
 
-const SPARK_BAR_PX = 4
-const SPARK_GAP_PX = 1
 const SPARK_MAX_POINTS = 40
 
 function SparklineBars({ checks }: { checks: CheckRow[] }) {
@@ -75,8 +73,6 @@ function SparklineBars({ checks }: { checks: CheckRow[] }) {
     top: number
   } | null>(null)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [capacity, setCapacity] = useState(SPARK_MAX_POINTS)
 
   const cancelClose = () => {
     if (closeTimerRef.current) {
@@ -96,39 +92,18 @@ function SparklineBars({ checks }: { checks: CheckRow[] }) {
     }
   }, [])
 
-  useLayoutEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    function update() {
-      const node = containerRef.current
-      if (!node) return
-      const w = node.getBoundingClientRect().width
-      if (w < 1) return
-      const step = SPARK_BAR_PX + SPARK_GAP_PX
-      const n = Math.max(
-        1,
-        Math.min(SPARK_MAX_POINTS, Math.floor((w + SPARK_GAP_PX) / step))
-      )
-      setCapacity(n)
-    }
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
   const slice = useMemo(() => {
     const sorted = [...checks].sort(
       (a, b) =>
         new Date(a.checked_at).getTime() - new Date(b.checked_at).getTime()
     )
-    const take = Math.min(SPARK_MAX_POINTS, capacity, sorted.length)
+    const take = Math.min(SPARK_MAX_POINTS, sorted.length)
     return sorted.slice(-take)
-  }, [checks, capacity])
+  }, [checks])
 
   if (slice.length === 0) {
     return (
-      <div className="flex h-6 min-w-[7rem] items-center justify-start">
+      <div className="flex h-6 min-w-[7rem] shrink-0 items-center justify-start">
         <span className="text-xs text-gray-400">—</span>
       </div>
     )
@@ -136,10 +111,7 @@ function SparklineBars({ checks }: { checks: CheckRow[] }) {
 
   return (
     <>
-      <div
-        ref={containerRef}
-        className="h-6 w-full min-w-0 overflow-hidden"
-      >
+      <div className="h-6 w-max min-w-[12.5rem] shrink-0">
         <div className="flex h-6 items-end justify-start gap-px">
           {slice.map((bar) => (
             <div
@@ -311,7 +283,7 @@ export default function MonitorCard({
           {host}
         </span>
       </td>
-      <td className="min-w-0 max-w-[min(100%,11rem)] px-4 py-3 align-middle">
+      <td className="min-w-[12.5rem] shrink-0 px-4 py-3 align-middle">
         <SparklineBars checks={checks} />
       </td>
       <td className="px-4 py-3 align-middle whitespace-nowrap text-sm font-medium tabular-nums text-gray-900">
