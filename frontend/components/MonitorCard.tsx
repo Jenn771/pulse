@@ -298,13 +298,18 @@ export default function MonitorCard({
           {statusToWord(status)}
         </span>
       </td>
-      <td className="max-w-[14rem] px-4 py-3 align-middle">
-        <div className="font-medium text-gray-900 truncate" title={displayName}>
+      <td className="max-w-[10rem] min-w-0 px-4 py-3 align-middle">
+        <div
+          className="truncate font-medium text-gray-900"
+          title={displayName}
+        >
           {displayName}
         </div>
       </td>
-      <td className="px-4 py-3 align-middle text-gray-700">
-        <span className="text-sm">{host}</span>
+      <td className="max-w-[12rem] min-w-0 px-4 py-3 align-middle text-gray-700">
+        <span className="block truncate text-sm" title={host}>
+          {host}
+        </span>
       </td>
       <td className="min-w-0 max-w-[min(100%,11rem)] px-4 py-3 align-middle">
         <SparklineBars checks={checks} />

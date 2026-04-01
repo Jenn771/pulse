@@ -443,10 +443,10 @@ export default function DashboardPage() {
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
         <div className="overflow-x-auto rounded border border-gray-200 bg-white">
-          <table className="min-w-[880px] w-full border-collapse text-sm">
+          <table className="table-fixed min-w-[880px] w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50 text-left">
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500 cursor-pointer select-none"
+                <th className="w-24 px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500 cursor-pointer select-none"
                     onClick={() => toggleSort("status")}>
                   <span className="flex items-center gap-1">
                     Status
@@ -455,7 +455,7 @@ export default function DashboardPage() {
                     </span>
                   </span>
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500 cursor-pointer select-none"
+                <th className="w-40 px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500 cursor-pointer select-none"
                     onClick={() => toggleSort("url")}>
                   <span className="flex items-center gap-1">
                     Name
@@ -464,16 +464,16 @@ export default function DashboardPage() {
                     </span>
                   </span>
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
+                <th className="w-48 px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
                   Domain
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
+                <th className="w-36 px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
                   Checks
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
+                <th className="w-28 px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
                   Response
                 </th>
-                <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
+                <th className="w-28 px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">
                   Uptime 30d
                 </th>
                 <th className="w-12 px-2 py-3" aria-hidden />
