@@ -57,7 +57,7 @@ Add a URL to monitor. A background worker pings it on a schedule and sends one e
 
 **Monitoring** — UP / DOWN / SLOW status, response time chart (day / week / month), 30-day uptime %, incident history with duration
 
-**Anomaly detection** — flags SLOW when response time exceeds the rolling mean + 3 standard deviations. Requires at least 5 checks before flagging to avoid false positives on new monitors.
+**Anomaly detection** — flags SLOW when a response takes significantly longer than the site's recent average. Requires 5 checks before flagging to avoid false positives on new monitors.
 
 **Alerts** — one email per incident. A new alert only fires after the site recovers and goes down again. Uses AWS Lambda + SES.
 
