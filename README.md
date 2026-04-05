@@ -14,6 +14,7 @@ Monitors websites, detects slow responses before full outages, and uses the Clau
 - [Stack](#stack)
 - [Features](#features)
 - [Local development](#local-development)
+- [What I'd improve next](#what-id-improve-next)
 - [Tests](#tests)
 
 </details>
@@ -99,6 +100,11 @@ npm run dev
 ### Environment variables
 
 Fill in `backend/.env` using `backend/.env.example` as a template, and `frontend/.env.local` using `frontend/.env.local.example`.
+
+## What I'd improve next
+
+- Move to **httpOnly cookies** for token storage instead of `localStorage` so tokens aren't accessible to JavaScript in the browser
+- Run the **background worker as its own process** instead of inside FastAPI so they can scale and restart independently
 
 ## Tests
 
