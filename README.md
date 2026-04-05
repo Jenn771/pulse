@@ -4,7 +4,7 @@ Monitors websites, detects slow responses before full outages, and uses the Clau
 
 [Live site](https://pulse-three-phi.vercel.app) · [Demo video](https://drive.google.com/file/d/1k-_8m6bBccmcOtgmtSQAz09RIG_4j2pp/view?usp=sharing)
 
-> ⚠️ Backend runs on Render's free tier — first request may take ~30 seconds to wake from sleep.
+> ⚠️ Backend runs on Render's free tier, first request may take ~30 seconds to wake from sleep
 
 <details>
 <summary>Table of Contents</summary>
